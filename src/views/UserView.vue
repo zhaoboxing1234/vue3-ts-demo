@@ -26,7 +26,33 @@
                 </el-button>
             </template>
         </el-table-column>
+        <el-table-column prop="userName" label="操作">
+            <template #default="scope">
+                <el-button type="primary" @click="changeUser(scope.row)" link size="small">
+                    编辑
+                </el-button>
+            </template>
+        </el-table-column>
     </el-table>
+    <el-dialog v-model="isShow" title="编辑信息">
+        <el-form :model="active">
+            <el-form-item label="姓名" label-width="50px">
+                <el-input v-model="active.nickName" autocomplete="off" />
+            </el-form-item>
+            <el-form-item label="角色" label-width="50px">
+                <el-select multiple v-model="active.role" placeholder="Please select Role">
+                    <el-option v-for="item in roleList" :key="item.roleId" :label="item.roleName"
+                        :value="item.roleId" />
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <el-button @click="isShow = false">Cancel</el-button>
+                <el-button type="primary" @click="updataInfo">Confirm</el-button>
+            </span>
+        </template>
+    </el-dialog>
 </template>
 
 <script lang="ts">
@@ -74,7 +100,29 @@ export default defineComponent({
                 getUser();
             }
         })
-        return { ...toRefs(data), onSubmit }
+        const changeUser = (row: IUserList) => {
+            data.active = {
+                id: row.id,
+                nickName: row.nickName,
+                role: row.role.map((value:any) => value.role || value.roleId),
+                userName: row.userName
+            };
+            data.isShow = true;
+        }
+        const updataInfo = ()=>{
+            let obj:any = data.list.find((value)=>{
+                return value.id = data.active.id;
+            })
+            obj.nickName = data.active.nickName;
+            obj.role = data.roleList.filter(value => data.active.role.indexOf(value.roleId) !==-1);
+            data.list.forEach((item,i)=>{
+                if(item.id === obj.id){
+                    data.list[i] = obj;
+                 }
+            });
+            data.isShow = false;
+        }
+        return { ...toRefs(data), onSubmit, changeUser,updataInfo }
     }
 })
 </script>
